@@ -1,10 +1,3 @@
-//
-//  BreakpointTests.swift
-//  BreakpointTests
-//
-//  Created by Dopheide,Pieter on 01/05/2025.
-//
-
 import Testing
 @testable import Breakpoint
 

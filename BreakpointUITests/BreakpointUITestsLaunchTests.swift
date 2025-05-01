@@ -1,10 +1,3 @@
-//
-//  BreakpointUITestsLaunchTests.swift
-//  BreakpointUITests
-//
-//  Created by Dopheide,Pieter on 01/05/2025.
-//
-
 import XCTest
 
 final class BreakpointUITestsLaunchTests: XCTestCase {

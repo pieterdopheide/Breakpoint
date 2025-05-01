@@ -1,24 +1,146 @@
-//
-//  ContentView.swift
-//  Breakpoint
-//
-//  Created by Dopheide,Pieter on 01/05/2025.
-//
-
 import SwiftUI
+import UserNotifications
 
 struct ContentView: View {
+    @Binding var timeRemaining: Int
+    @Binding var showTimer: Bool
+    
+    @State private var timer = Timer.publish(every: 1, on: .main, in: .common)
+    @State private var isRunning = false
+    
+    @State private var focusTimeInMinutes = 25
+    
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+            Text("\(timeString(time: timeRemaining))")
+                .font(.system(size: 60, design: .monospaced))
+                .foregroundStyle(.white)
+                .onReceive(timer) { _ in
+                    if timeRemaining > 0 {
+                        timeRemaining -= 1
+                    } else {
+                        stopTimer()
+                        scheduleNotification()
+                    }
+                }
+            
+            Button {
+                if isRunning {
+                    stopTimer()
+                } else {
+                    if timeRemaining == 0 {
+                        timeRemaining = focusTimeInMinutes * 60
+                    }
+                    startTimer()
+                }
+            } label: {
+                Image(systemName: isRunning ? "pause.fill" : "play.fill")
+                    .foregroundStyle(Color(red: 193 / 255, green: 92 / 255, blue: 92 / 255))
+                    .padding()
+            }
+            .font(.system(size: 20))
+            .background(.white)
+            .clipShape(.circle)
+            
+            Button {
+                timeRemaining = focusTimeInMinutes * 60
+            } label: {
+                // arrow.trianglehead.counterclockwise.rotate
+                // arrow.trianglehead.counterclockwise
+                Image(systemName: "arrow.counterclockwise")
+                    .foregroundStyle(Color(red: 193 / 255, green: 92 / 255, blue: 92 / 255))
+            }
+            .background(.white)
+            .clipShape(.buttonBorder)
         }
+        .onAppear {
+            requestNotificationPermission()
+        }
+        .navigationTitle("Breakpoint")
         .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(red: 186 / 255, green: 73 / 255, blue: 73 / 255).ignoresSafeArea())
+        .overlay(alignment: .topLeading) {
+            Button("Quit", systemImage: "xmark.circle.fill") {
+                NSApp.terminate(nil)
+            }
+            .labelStyle(.iconOnly)
+            .buttonStyle(.plain)
+            .padding(6)
+        }
+        .overlay(alignment: .topTrailing) {
+            Menu {
+                Picker("Focus Time", selection: $focusTimeInMinutes) {
+                    Text("1 minute").tag(1)
+                    Text("5 minutes").tag(5)
+                    Text("10 minutes").tag(10)
+                    Text("15 minutes").tag(15)
+                    Text("20 minutes").tag(20)
+                    Text("25 minutes").tag(25)
+                    Text("30 minutes").tag(30)
+                }
+                
+                Toggle("Show Timer", isOn: $showTimer)
+            } label: {
+                Image(systemName: "gear")
+            }
+            .labelStyle(.iconOnly)
+            .buttonStyle(.plain)
+            .padding(6)
+            .onChange(of: focusTimeInMinutes) {
+                timeRemaining = focusTimeInMinutes * 60
+            }
+        }
+    }
+    
+    func startTimer() {
+        if !isRunning {
+            isRunning = true
+            timer = Timer.publish(every: 1, on: .main, in: .common)
+            _ = timer.connect()
+        }
+    }
+    
+    func stopTimer() {
+        if isRunning {
+            isRunning = false
+            timer.connect().cancel()
+        }
+    }
+    
+    func timeString(time: Int) -> String {
+        let minutes = time / 60 % 60
+        let seconds = time % 60
+        return String(format: "%02i:%02i", minutes, seconds)
+    }
+    
+    func scheduleNotification() {
+        let content = UNMutableNotificationContent()
+        content.title = "Hit a breakpoint"
+        content.subtitle = "Time to take a short break!"
+        content.sound = UNNotificationSound.default
+        
+        // show this notification five seconds from now
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        
+        // choose a random identifier
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+        
+        // add our notification request
+        UNUserNotificationCenter.current().add(request)
+    }
+    
+    func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
+            if success {
+                print("All set!")
+            } else if let error {
+                print(error.localizedDescription)
+            }
+        }
     }
 }
 
 #Preview {
-    ContentView()
+    ContentView(timeRemaining: .constant(25 * 60), showTimer: .constant(true))
 }
