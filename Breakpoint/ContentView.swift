@@ -1,7 +1,10 @@
+import AppKit
 import SwiftUI
 import UserNotifications
 
 struct ContentView: View {
+    @EnvironmentObject var breakWindowController: BreakWindowController
+    
     @Binding var timeRemaining: Int
     @Binding var showTimer: Bool
     
@@ -9,6 +12,7 @@ struct ContentView: View {
     @State private var isRunning = false
     
     @State private var focusTimeInMinutes = 25
+    @State private var breakType = BreakType.screenOverlay
     
     var body: some View {
         VStack {
@@ -20,7 +24,12 @@ struct ContentView: View {
                         timeRemaining -= 1
                     } else {
                         stopTimer()
-                        scheduleNotification()
+                        switch breakType {
+                        case .notification:
+                            scheduleNotification()
+                        case .screenOverlay:
+                            breakWindowController.showBreakWindow()
+                        }
                     }
                 }
             
@@ -35,7 +44,7 @@ struct ContentView: View {
                 }
             } label: {
                 Image(systemName: isRunning ? "pause.fill" : "play.fill")
-                    .foregroundStyle(Color(red: 193 / 255, green: 92 / 255, blue: 92 / 255))
+                    .foregroundStyle(Color.flow)
                     .padding()
             }
             .font(.system(size: 20))
@@ -48,18 +57,20 @@ struct ContentView: View {
                 // arrow.trianglehead.counterclockwise.rotate
                 // arrow.trianglehead.counterclockwise
                 Image(systemName: "arrow.counterclockwise")
-                    .foregroundStyle(Color(red: 193 / 255, green: 92 / 255, blue: 92 / 255))
+                    .foregroundStyle(Color.flow)
             }
             .background(.white)
             .clipShape(.buttonBorder)
         }
-        .onAppear {
-            requestNotificationPermission()
+        .onChange(of: breakType) {
+            if breakType == .notification {
+                requestNotificationPermission()
+            }
         }
         .navigationTitle("Breakpoint")
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(red: 186 / 255, green: 73 / 255, blue: 73 / 255).ignoresSafeArea())
+        .background(Color.flow.ignoresSafeArea())
         .overlay(alignment: .topLeading) {
             Button("Quit", systemImage: "xmark.circle.fill") {
                 NSApp.terminate(nil)
@@ -81,6 +92,11 @@ struct ContentView: View {
                 }
                 
                 Toggle("Show Timer", isOn: $showTimer)
+                
+                Picker("Break Type", selection: $breakType) {
+                    Text("Notification").tag(BreakType.notification)
+                    Text("Screen Overlay").tag(BreakType.screenOverlay)
+                }
             } label: {
                 Image(systemName: "gear")
             }
@@ -139,6 +155,11 @@ struct ContentView: View {
             }
         }
     }
+}
+
+enum BreakType {
+    case notification
+    case screenOverlay
 }
 
 #Preview {
