@@ -6,14 +6,21 @@ struct BreakpointApp: App {
     
     @State private var timeRemaining = 25 * 60
     @State private var showTimer = true
+    @State private var isBreakTime = false
     
     var body: some Scene {
         MenuBarExtra {
-            ContentView(timeRemaining: $timeRemaining, showTimer: $showTimer)
+            ContentView(timeRemaining: $timeRemaining, showTimer: $showTimer, isBreakTime: $isBreakTime)
                 .environment(breakWindowController)
         } label: {
             HStack {
-                Image(systemName: timeRemaining > 0 ? "timer" : "alarm.waves.left.and.right")
+                if isBreakTime {
+                    Image(systemName: "cup.and.heat.waves")
+                } else if timeRemaining == 0 {
+                    Image(systemName: "alarm.waves.left.and.right")
+                } else {
+                    Image(systemName: "timer")
+                }
                 if showTimer {
                     Text("\(timeString(time: timeRemaining))")
                         .font(.system(.body, design: .monospaced))

@@ -7,13 +7,13 @@ struct ContentView: View {
     
     @Binding var timeRemaining: Int
     @Binding var showTimer: Bool
+    @Binding var isBreakTime: Bool
     
     @State private var timer = Timer.publish(every: 1, on: .main, in: .common)
     @State private var isRunning = false
     
     @State private var focusTimeInMinutes = 25
     @State private var breakTimeInMinutes = 5
-    @State private var isBreakTime = false
     @State private var breakType = BreakType.screenOverlay
     
     var body: some View {
@@ -200,6 +200,6 @@ enum BreakType {
 }
 
 #Preview {
-    ContentView(timeRemaining: .constant(25 * 60), showTimer: .constant(true))
+    ContentView(timeRemaining: .constant(25 * 60), showTimer: .constant(true), isBreakTime: .constant(false))
         .environment(BreakWindowController())
 }
