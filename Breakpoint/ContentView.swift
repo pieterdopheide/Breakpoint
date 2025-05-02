@@ -12,6 +12,8 @@ struct ContentView: View {
     @State private var isRunning = false
     
     @State private var focusTimeInMinutes = 25
+    @State private var breakTimeInMinutes = 5
+    @State private var isBreakTime = false
     @State private var breakType = BreakType.screenOverlay
     
     var body: some View {
@@ -23,11 +25,17 @@ struct ContentView: View {
                     if timeRemaining > 0 {
                         timeRemaining -= 1
                     } else {
-                        stopTimer()
                         switch breakType {
                         case .notification:
                             scheduleNotification()
+                            if isBreakTime {
+                                timeRemaining = focusTimeInMinutes * 60
+                            } else {
+                                timeRemaining = breakTimeInMinutes * 60
+                            }
+                            isBreakTime.toggle()
                         case .screenOverlay:
+                            stopTimer()
                             breakWindowController.showBreakWindow()
                         }
                     }
@@ -44,7 +52,7 @@ struct ContentView: View {
                 }
             } label: {
                 Image(systemName: isRunning ? "pause.fill" : "play.fill")
-                    .foregroundStyle(Color.flow)
+                    .foregroundStyle(isBreakTime ? Color.breakpoint : Color.flow)
                     .padding()
             }
             .font(.system(size: 20))
@@ -57,7 +65,7 @@ struct ContentView: View {
                 // arrow.trianglehead.counterclockwise.rotate
                 // arrow.trianglehead.counterclockwise
                 Image(systemName: "arrow.counterclockwise")
-                    .foregroundStyle(Color.flow)
+                    .foregroundStyle(isBreakTime ? Color.breakpoint : Color.flow)
             }
             .background(.white)
             .clipShape(.buttonBorder)
@@ -67,10 +75,17 @@ struct ContentView: View {
                 requestNotificationPermission()
             }
         }
+        .onChange(of: breakWindowController.shouldRestartTimer) {
+            if breakWindowController.shouldRestartTimer {
+                timeRemaining = focusTimeInMinutes * 60
+                breakWindowController.shouldRestartTimer = false
+                startTimer()
+            }
+        }
         .navigationTitle("Breakpoint")
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.flow.ignoresSafeArea())
+        .background((isBreakTime ? Color.breakpoint : Color.flow).ignoresSafeArea())
         .overlay(alignment: .topLeading) {
             Button("Quit", systemImage: "xmark.circle.fill") {
                 NSApp.terminate(nil)
@@ -132,9 +147,15 @@ struct ContentView: View {
     
     func scheduleNotification() {
         let content = UNMutableNotificationContent()
-        content.title = "Hit a breakpoint"
-        content.subtitle = "Time to take a short break!"
-        content.sound = UNNotificationSound.default
+        if isBreakTime {
+            content.title = "Break time is over"
+            content.subtitle = "Let's go at it again!"
+            content.sound = UNNotificationSound.default
+        } else {
+            content.title = "Hit a breakpoint"
+            content.subtitle = "Time to take a short break!"
+            content.sound = UNNotificationSound.default
+        }
         
         // show this notification five seconds from now
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
