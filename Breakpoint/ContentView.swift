@@ -3,7 +3,7 @@ import SwiftUI
 import UserNotifications
 
 struct ContentView: View {
-    @EnvironmentObject var breakWindowController: BreakWindowController
+    @Environment(BreakWindowController.self) var breakWindowController: BreakWindowController
     
     @Binding var timeRemaining: Int
     @Binding var showTimer: Bool
@@ -185,4 +185,5 @@ enum BreakType {
 
 #Preview {
     ContentView(timeRemaining: .constant(25 * 60), showTimer: .constant(true))
+        .environment(BreakWindowController())
 }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct BreakView: View {
-    @EnvironmentObject var breakWindowController: BreakWindowController
+    @Environment(BreakWindowController.self) var breakWindowController: BreakWindowController
     
     @State private var timeRemaining = 5 * 60
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()

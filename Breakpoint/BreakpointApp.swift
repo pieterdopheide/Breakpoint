@@ -2,7 +2,7 @@ import SwiftUI
 
 @main
 struct BreakpointApp: App {
-    @StateObject var breakWindowController = BreakWindowController()
+    @State var breakWindowController = BreakWindowController()
     
     @State private var timeRemaining = 25 * 60
     @State private var showTimer = true
@@ -10,7 +10,7 @@ struct BreakpointApp: App {
     var body: some Scene {
         MenuBarExtra {
             ContentView(timeRemaining: $timeRemaining, showTimer: $showTimer)
-                .environmentObject(breakWindowController)
+                .environment(breakWindowController)
         } label: {
             HStack {
                 Image(systemName: timeRemaining > 0 ? "timer" : "alarm.waves.left.and.right")

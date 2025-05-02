@@ -2,10 +2,11 @@ import AppKit
 import Foundation
 import SwiftUI
 
-class BreakWindowController: ObservableObject {
+@Observable
+class BreakWindowController {
     private var breakWindow: NSWindow?
     
-    @Published var shouldRestartTimer = false
+    var shouldRestartTimer = false
     
     func showBreakWindow() {
         // Create a full-screen NSWindow
@@ -21,7 +22,7 @@ class BreakWindowController: ObservableObject {
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary] // Makes it full-screen across all spaces
         
         // Embed the SwiftUI view with the environment object
-        let hostingView = NSHostingView(rootView: BreakView().environmentObject(self)) // Pass the BreakWindowController
+        let hostingView = NSHostingView(rootView: BreakView().environment(self)) // Pass the BreakWindowController
         window.contentView = hostingView
         
         // Show the window
