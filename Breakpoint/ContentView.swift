@@ -41,34 +41,50 @@ struct ContentView: View {
                     }
                 }
             
-            Button {
-                if isRunning {
-                    stopTimer()
-                } else {
-                    if timeRemaining == 0 {
-                        timeRemaining = focusTimeInMinutes * 60
-                    }
-                    startTimer()
+            HStack {
+                Button {
+                    timeRemaining = focusTimeInMinutes * 60
+                } label: {
+                    // arrow.trianglehead.counterclockwise.rotate
+                    // arrow.trianglehead.counterclockwise
+                    Image(systemName: "arrow.counterclockwise")
+                        .foregroundStyle(isBreakTime ? Color.breakpoint : Color.flow)
                 }
-            } label: {
-                Image(systemName: isRunning ? "pause.fill" : "play.fill")
-                    .foregroundStyle(isBreakTime ? Color.breakpoint : Color.flow)
-                    .padding()
+                .background(.white)
+                .clipShape(.buttonBorder)
+                
+                Button {
+                    if isRunning {
+                        stopTimer()
+                    } else {
+                        if timeRemaining == 0 {
+                            timeRemaining = focusTimeInMinutes * 60
+                        }
+                        startTimer()
+                    }
+                } label: {
+                    Image(systemName: isRunning ? "pause.fill" : "play.fill")
+                        .foregroundStyle(isBreakTime ? Color.breakpoint : Color.flow)
+                        .padding()
+                }
+                .font(.system(size: 20))
+                .background(.white)
+                .clipShape(.circle)
+                
+                Button {
+                    if isBreakTime {
+                        timeRemaining = focusTimeInMinutes * 60
+                    } else {
+                        timeRemaining = breakTimeInMinutes * 60
+                    }
+                    isBreakTime.toggle()
+                } label: {
+                    Image(systemName: "forward.end")
+                        .foregroundStyle(isBreakTime ? Color.breakpoint : Color.flow)
+                }
+                .background(.white)
+                .clipShape(.buttonBorder)
             }
-            .font(.system(size: 20))
-            .background(.white)
-            .clipShape(.circle)
-            
-            Button {
-                timeRemaining = focusTimeInMinutes * 60
-            } label: {
-                // arrow.trianglehead.counterclockwise.rotate
-                // arrow.trianglehead.counterclockwise
-                Image(systemName: "arrow.counterclockwise")
-                    .foregroundStyle(isBreakTime ? Color.breakpoint : Color.flow)
-            }
-            .background(.white)
-            .clipShape(.buttonBorder)
         }
         .onChange(of: breakType) {
             if breakType == .notification {
