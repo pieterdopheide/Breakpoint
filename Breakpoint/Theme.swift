@@ -1,5 +1,5 @@
 import Foundation
-import SwiftUICore
+import SwiftUI
 
 extension Color {
     static let flow = Color(red: 193 / 255, green: 92 / 255, blue: 92 / 255)
